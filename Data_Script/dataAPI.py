@@ -1,12 +1,17 @@
 import requests
 import json
 import time # due to API restrictions
+import csv
 
 delay_condition = 0;
-with open(r'C:\Users\coste\PycharmProjects\untitled2\pry.json') as json_file:
+companies = 0;
+with open(r'C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles\S&P500.json') as json_file:
     delay_condition += 1
     data = json.load(json_file)
     for p in data:
+        if companies == 50:
+            break
+        companies += 1
         # print('To delay einai toso ' + int(delay_condition))
         delay_condition += 1
         if delay_condition == 5:
@@ -17,11 +22,17 @@ with open(r'C:\Users\coste\PycharmProjects\untitled2\pry.json') as json_file:
         parameters = {
             'function': 'TIME_SERIES_DAILY',
             'symbol': p['Symbol'],
-            'outputsize': 'compact',
-            'apikey': 'RJANQO4BF951MNGA'
+            'outputsize': 'full', #compact for less data
+            'apikey': 'RJANQO4BF951MNGA',
+            'datatype': 'csv'
+
         }
         r = requests.get('https://www.alphavantage.co/query?', parameters)
         #print(r.json())
-        filename = p['Symbol'] + '.json'
-        with open(filename, "w", encoding="utf-8") as writeJSON:
-            json.dump(r.json(), writeJSON, ensure_ascii=False)
+        filename = p['Symbol'] + '.csv'
+        #with open(filename, "w", encoding="utf-8") as writeJSON:
+            #json.dump(r.json(), writeJSON, ensure_ascii=False)
+        with open(filename, 'w',newline="\n" ) as csvfile:
+            writer = csv.writer(csvfile)
+            for line in r.iter_lines():
+                writer.writerow(line.decode('utf-8').split(','))
