@@ -30,7 +30,7 @@ with open(r'C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles\S&P500.jso
 
         }
         r = requests.get('https://www.alphavantage.co/query?', parameters)
-        #print(r.json())
+        #print(r.json())###
         filename = p['Symbol'] + '.csv'
         #with open(filename, "w", encoding="utf-8") as writeJSON: C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles
             #json.dump(r.json(), writeJSON, ensure_ascii=False)
