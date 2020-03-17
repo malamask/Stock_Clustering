@@ -19,7 +19,7 @@ for a in df:
 """
 
 
-path = r'C:\Users\coste\PycharmProjects\Stock_Clustering\Data_Script'
+path = r'C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles'
 
 stock_files = glob.glob(path + "/*.csv")
 
@@ -28,14 +28,15 @@ stocks = []
 for filename in stock_files:
     df = pd.read_csv(filename, index_col = None, header = 0)
     stocks.append(df)
+    df.head()
 
-frame = pd.concat(stocks, axis = 0, ignore_index = True)
+frame = pd.concat(stocks, axis = 0, ignore_index = True, sort=False)
 
 # K-Means clustering
-print(frame)
+print(df.head())
+
+#trasform files
 
 
 
 
-
-# Start
