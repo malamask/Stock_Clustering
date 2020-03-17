@@ -41,12 +41,12 @@ print(df.head())
 
 main_df = pd.DataFrame()
 for filename in stock_files:
-    df = pd.read_csv(filename)
+    df = pd.read_csv(filename,nrows=10)
     df.set_index('timestamp', inplace=True)
 
-    #df.rename(columns = {'close', os.path.basename(filename[:-4])} , inplace=True)
+    df.rename(columns = {'close': os.path.basename(filename[:-4])} , inplace=True)
 
-    df.drop(['open', 'high', 'low', 'close','volume'], 1, inplace = True)
+    df.drop(['open', 'high', 'low','volume'], 1, inplace = True)
 
     if main_df.empty:
         main_df = df
@@ -54,5 +54,5 @@ for filename in stock_files:
         main_df = main_df.join(df,how='outer')
 
 print(main_df.head())
-main_df.to_csv('sp500_closes.csvv')
+main_df.to_csv('sp500_closes.csv')
 
