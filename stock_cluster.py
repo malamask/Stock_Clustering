@@ -42,6 +42,7 @@ print(df.head())
 main_df = pd.DataFrame()
 for filename in stock_files:
     df = pd.read_csv(filename,nrows=10)
+
     df.set_index('timestamp', inplace=True)
 
     df.rename(columns = {'close': os.path.basename(filename[:-4])} , inplace=True)
@@ -54,5 +55,8 @@ for filename in stock_files:
         main_df = main_df.join(df,how='outer')
 
 print(main_df.head())
+main_df.dropna(axis=0, how='any', thresh=None, subset=None, inplace=False)
 main_df.to_csv('sp500_closes.csv')
+
+#
 
