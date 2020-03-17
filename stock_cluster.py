@@ -6,6 +6,7 @@ import datetime as datetime
 import matplotlib.pyplot as plt
 import pandas_datareader.data as web
 from matplotlib import ticker
+from sklearn.cluster import KMeans
 
 r"""
 path = r'C:\Users\coste\PycharmProjects\Stock_Clustering\Data_Script'
@@ -58,5 +59,24 @@ print(main_df.head())
 main_df.dropna(axis=0, how='any', thresh=None, subset=None, inplace=False)
 main_df.to_csv('sp500_closes.csv')
 
-#
+#Calculate average annual percentage return and volatilities over a theoretical one year period
+returns = prices_df.pct_change().mean() * 252
+returns = pd.DataFrame(returns)
+returns.columns = ['Returns']
+returns['Volatility'] = prices_df.pct_change().std() * sqrt(252)
+
+#format the data as a numpy array to feed into the K-Means algorithm
+data = np.asarray([np.asarray(returns['Returns']),np.asarray(returns['Volatility'])]).T
+
+X = data
+distorsions = []
+for k in range(2, 20):
+    k_means = KMeans(n_clusters=k)
+    k_means.fit(X)
+    distorsions.append(k_means.inertia_)
+
+fig = plt.figure(figsize=(15, 5))
+plt.plot(range(2, 20), distorsions)
+plt.grid(True)
+plt.title('Elbow curve')
 
