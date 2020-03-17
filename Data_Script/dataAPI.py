@@ -1,7 +1,9 @@
+import os
 import requests
 import json
 import time # due to API restrictions
 import csv
+from os.path import join as pjoin
 
 delay_condition = 0;
 companies = 0;
@@ -30,9 +32,11 @@ with open(r'C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles\S&P500.jso
         r = requests.get('https://www.alphavantage.co/query?', parameters)
         #print(r.json())
         filename = p['Symbol'] + '.csv'
-        #with open(filename, "w", encoding="utf-8") as writeJSON:
+        #with open(filename, "w", encoding="utf-8") as writeJSON: C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles
             #json.dump(r.json(), writeJSON, ensure_ascii=False)
-        with open(filename, 'w',newline="\n" ) as csvfile:
+        path = r'C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles'
+
+        with open(os.path.join(path,filename), 'w',newline="\n" ) as csvfile:
             writer = csv.writer(csvfile)
             for line in r.iter_lines():
                 writer.writerow(line.decode('utf-8').split(','))

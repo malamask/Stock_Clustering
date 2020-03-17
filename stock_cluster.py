@@ -31,6 +31,11 @@ for filename in stock_files:
 
 frame = pd.concat(stocks, axis = 0, ignore_index = True)
 
+# K-Means clustering
+print(frame)
 
 
 
+
+
+# Start
