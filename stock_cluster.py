@@ -85,14 +85,34 @@ for symbol, value in main_df.iteritems():
     print()
     print(symbol)
     series_list[symbol] = np.array([], float)
-    for date, price in value[1:].items():
+    for date, price in value[2:].items():
         #series_list[]
         print(f"Index : {date}, Value : {price}")
         series_list[symbol] = np.append(series_list[symbol],price)
     print(series_list[symbol])
-
+import itertools
 #start
+for series1, series2 in itertools.combinations(series_list, 2):
+    #print(series1," ", series_list[series1])
+    #print("kai")
+    #print(series2," ", series_list[series2])
 
+    from fastdtw import fastdtw
+    from scipy.spatial.distance import euclidean
+
+    x = series_list[series1]
+    print(x)
+    print(series_list.__sizeof__())
+    y = series_list[series2]
+
+    distance, path = fastdtw(x, y, dist=euclidean)
+
+    print(distance)
+    print(path)
+"""
+for series in series_list:
+    print(series ,"  ",series_list[series] )
+    print("epomeno")
 #calculate DTW
 
     from fastdtw import fastdtw
@@ -100,10 +120,11 @@ for symbol, value in main_df.iteritems():
 
     x = np.array([1, 2, 3, 3, 7])
     print(x)
-    print(series_list['A'])
+    print(series_list.__sizeof__())
     y = np.array([1, 2, 2, 2, 2, 2, 2, 4])
 
     distance, path = fastdtw(x, y, dist=euclidean)
 
     #print(distance)
-   # print(path)
+    # print(path)
+"""
