@@ -93,8 +93,55 @@ for symbol, value in main_df.iteritems():
         series_list[symbol] = np.append(series_list[symbol],price)
     print(series_list[symbol])
     series_listH.append(tempList)
-import itertools
+
+#visualization
+print(series_listH)
+series_listH = np.asarray(series_listH,dtype=np.float32)
+print(series_listH)
+
+
+
+
+
+import warnings
+warnings.filterwarnings('ignore')
+
+
+import matplotlib.pylab as plt
+
+#%pylab inline
+from pyFTS.partitioners import CMeans, Grid, FCM, Huarng, Entropy, Util as pUtil
+from pyFTS.common import Membership as mf
+from pyFTS.benchmarks import benchmarks as bchmk
+from pyFTS.data import Enrollments
+
+
+
+from pyFTS.common import Transformations
+
+tdiff = Transformations.Differential(1)
+
+from pyFTS.data import TAIEX
+
+dataset = TAIEX.get_data()
+#dataset_diff = tdiff.apply(dataset)
+for dataset in series_listH:
+    #print(serie)
+    dataset_diff = tdiff.apply(dataset)
+    fig, ax = plt.subplots(nrows=2, ncols=1, figsize=[10,5])
+    ax[0].plot(dataset)
+    ax[1].plot(dataset_diff)
+    plt.show()
+
+
+
+
+
+
+
+
 #start
+import itertools
 
 for series1, series2 in itertools.combinations(series_list, 2):
     #print(series1," ", series_list[series1])
@@ -178,4 +225,7 @@ plt.title('Hierarchical Clustering Dendrogram')
 plot_dendrogram(model, truncate_mode='level', p=6)
 plt.xlabel("Number of points in node (or index of point if no parenthesis).")
 plt.show()
+
+
+
 
