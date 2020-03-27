@@ -80,6 +80,7 @@ main_df.to_csv('sp500_closes.csv')
 
 series_list = {} #use python dictionary
 series_listH = []
+symbol_listH = []
 #seperate the
 for symbol, value in main_df.iteritems():
     #print(key, value)
@@ -95,6 +96,7 @@ for symbol, value in main_df.iteritems():
         series_list[symbol] = np.append(series_list[symbol],price)
     print(series_list[symbol])
     series_listH.append(tempList)
+    symbol_listH.append(symbol)
 
 #visualization
 print(series_listH)
@@ -114,7 +116,7 @@ import matplotlib.pylab as plt
 #from pyFTS.benchmarks import benchmarks as bchmk
 #from pyFTS.data import Enrollments
 
-
+# https://github.com/PYFTS/notebooks/blob/master/Partitioners.ipynb
 
 from pyFTS.common import Transformations
 
@@ -179,7 +181,7 @@ for series in series_list:
     print(path)
 """
 
-#hierarchical clustering
+#hierarchical clustering # https://scikit-learn.org/stable/modules/clustering.html#hierarchical-clustering
 import numpy as np
 
 from matplotlib import pyplot as plt
@@ -206,7 +208,13 @@ def plot_dendrogram(model, **kwargs):
                                       counts]).astype(float)
 
     # Plot the corresponding dendrogram
-    dendrogram(linkage_matrix, **kwargs)
+    dendrogram(
+        linkage_matrix,
+        **kwargs,
+        labels=main_df.columns
+    )
+    #print("mas endiafrei")
+    #print(linkage_matrix)
 
 
 
@@ -277,7 +285,7 @@ for yi in range(3):
         plt.plot(xx.ravel(), "k-", alpha=.2)
     plt.plot(km.cluster_centers_[yi].ravel(), "r-")
     plt.xlim(0, sz)
-    plt.ylim(0, 200)
+    plt.ylim(0, 2000) #dollars
     plt.text(0.55, 0.85,'Cluster %d' % (yi + 1),
              transform=plt.gca().transAxes)
     if yi == 1:
@@ -314,3 +322,13 @@ X_train = TimeSeriesResampler(sz=10).fit_transform(X_train)
 print(X_train.shape)
 
 """
+
+import plotly.express as px
+
+import pandas as pd
+df = pd.read_csv(r'C:\Users\coste\Desktop\10ο Εξάμηνο\GOOG.csv')
+
+fig = px.line(df, x='timestamp', y='high')
+fig.show()
+
+main_df.set_index(symbol_listH)
