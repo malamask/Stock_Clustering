@@ -141,7 +141,7 @@ for dataset in series_listH:
 
 
 
-#start - DTW only
+#start - DTW only https://pypi.org/project/fastdtw/
 import itertools
 
 for series1, series2 in itertools.combinations(series_list, 2):
@@ -182,13 +182,14 @@ for series in series_list:
 """
 
 #hierarchical clustering # https://scikit-learn.org/stable/modules/clustering.html#hierarchical-clustering
+# https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html#sklearn.cluster.AgglomerativeClustering
 import numpy as np
 
 from matplotlib import pyplot as plt
 from scipy.cluster.hierarchy import dendrogram
 from sklearn.cluster import AgglomerativeClustering
 
-
+l_matrix = []
 def plot_dendrogram(model, **kwargs):
     # Create linkage matrix and then plot the dendrogram
 
@@ -206,7 +207,7 @@ def plot_dendrogram(model, **kwargs):
 
     linkage_matrix = np.column_stack([model.children_, model.distances_,
                                       counts]).astype(float)
-
+    print(linkage_matrix)
     # Plot the corresponding dendrogram
     dendrogram(
         linkage_matrix,
@@ -229,7 +230,7 @@ model = model.fit(series_listH)
 #model = model.fit(X
 plt.title('Hierarchical Clustering Dendrogram')
 # plot the top three levels of the dendrogram
-plot_dendrogram(model, truncate_mode='level', p=6)
+plot_dendrogram(model, truncate_mode='lastp') #https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.cluster.hierarchy.dendrogram.html
 plt.xlabel("Number of points in node (or index of point if no parenthesis).")
 plt.show()
 
@@ -332,3 +333,37 @@ fig = px.line(df, x='timestamp', y='high')
 fig.show()
 
 main_df.set_index(symbol_listH)
+
+#visualize AMZN, GOOG, GOOGL in the same graph
+
+import plotly.graph_objects as go
+
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=main_df.index.values[1:], y=main_df['GOOG'], name="GOOG",
+                         line_color='deepskyblue'))
+
+fig.add_trace(go.Scatter(x=main_df.index.values[1:], y=main_df['GOOGL'], name="GOOGL",
+                         line_color='dimgray'))
+fig.add_trace(go.Scatter(x=main_df.index.values[1:], y=main_df['AMZN'], name="AMZN",
+                         line_color='#8c564b'))
+fig.add_trace(go.Scatter(x=main_df.index.values[1:], y=main_df['ADS'], name="ADS",
+                         line_color='#bcbd22'))
+fig.add_trace(go.Scatter(x=main_df.index.values[1:], y=main_df['LNT'], name="LNT",
+                         line_color='#e377c2'))
+fig.add_trace(go.Scatter(x=main_df.index.values[1:], y=main_df['MO'], name="MO",
+                         line_color='#7f7f7f'))
+
+fig.update_layout(title_text='Time Series with Rangeslider',
+                  xaxis_rangeslider_visible=True)
+fig.show()
+
+#hierarchical cophenetic
+
+from scipy.cluster.hierarchy import single, cophenet
+from scipy.spatial.distance import pdist, squareform
+
+X = series_listH
+Z = single(pdist(series_listH))
+print(Z)
+ax = squareform(cophenet(Z))
+print(squareform(cophenet(Z)))
