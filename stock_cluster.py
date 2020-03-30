@@ -61,7 +61,7 @@ print(df.head())
 
 main_df = pd.DataFrame()
 for filename in stock_files:
-    df = pd.read_csv(filename,nrows=70)#number of daily prices
+    df = pd.read_csv(filename,nrows=700)#number of daily prices
 
     df.set_index('timestamp', inplace=True)
 
@@ -132,6 +132,10 @@ for dataset in series_listH:
     fig, ax = plt.subplots(nrows=2, ncols=1, figsize=[10,5])
     ax[0].plot(dataset)
     ax[1].plot(dataset_diff)
+    ax[0].set_xlabel('day number')
+    ax[0].set_ylabel('close')
+    ax[1].set_xlabel('day number')
+    ax[1].set_ylabel('variation')
     plt.show()
 
 
@@ -139,28 +143,32 @@ for dataset in series_listH:
 
 
 
-
-
+data_size = len(series_list)
+distance_matrix = np.zeros((data_size-1,data_size-1),float)
+sum = 0
 #start - DTW only https://pypi.org/project/fastdtw/
 import itertools
+from fastdtw import fastdtw
+from scipy.spatial.distance import euclidean
 
 for series1, series2 in itertools.combinations(series_list, 2):
     #print(series1," ", series_list[series1])
     #print("kai")
     #print(series2," ", series_list[series2])
-
-    from fastdtw import fastdtw
-    from scipy.spatial.distance import euclidean
-
+    sum+=1
+    print(sum)
     x = series_list[series1]
-    print(x)
-    print(series_list.__sizeof__())
+    #print(x)
+    #print(type(x))
+    #print(series_list.__sizeof__())
     y = series_list[series2]
 
     distance, path = fastdtw(x, y, dist=euclidean)
 
-    print(distance)
-    print(path)
+    #print(distance)
+    #print(path)
+
+#create distance matrix
 """
 for series in series_list:
     print(series ,"  ",series_list[series] )
@@ -181,7 +189,8 @@ for series in series_list:
     print(path)
 """
 
-#hierarchical clustering # https://scikit-learn.org/stable/modules/clustering.html#hierarchical-clustering
+#hierarchical clustering
+# https://scikit-learn.org/stable/modules/clustering.html#hierarchical-clustering
 # https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html#sklearn.cluster.AgglomerativeClustering
 import numpy as np
 
@@ -207,7 +216,6 @@ def plot_dendrogram(model, **kwargs):
 
     linkage_matrix = np.column_stack([model.children_, model.distances_,
                                       counts]).astype(float)
-    print(linkage_matrix)
     # Plot the corresponding dendrogram
     dendrogram(
         linkage_matrix,
@@ -230,7 +238,7 @@ model = model.fit(series_listH)
 #model = model.fit(X
 plt.title('Hierarchical Clustering Dendrogram')
 # plot the top three levels of the dendrogram
-plot_dendrogram(model, truncate_mode='lastp') #https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.cluster.hierarchy.dendrogram.html
+plot_dendrogram(model, truncate_mode='lastp',p=47) #https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.cluster.hierarchy.dendrogram.html
 plt.xlabel("Number of points in node (or index of point if no parenthesis).")
 plt.show()
 
@@ -269,7 +277,7 @@ X_train = series_listH
 print(X_train)
 #numpy.random.shuffle(X_train)
 # Keep only 30 time series
-X_train = TimeSeriesScalerMeanVariance().fit_transform(X_train[:30])
+#X_train = TimeSeriesScalerMeanVariance().fit_transform(X_train[:30])
 # Make time series shorter
 X_train = TimeSeriesResampler(sz=40).fit_transform(X_train)
 print(X_train.shape)
@@ -277,7 +285,7 @@ sz = X_train.shape[1]
 print(sz)
 # Euclidean k-means
 print("Euclidean k-means")
-km = TimeSeriesKMeans(n_clusters=3, verbose=True, random_state=0)
+km = TimeSeriesKMeans(n_clusters=3, verbose=True, random_state=seed)
 y_pred = km.fit_predict(X_train)
 plt.figure()
 for yi in range(3):
@@ -297,39 +305,13 @@ plt.tight_layout()
 plt.show()
 
 
-
 #test area
-"""
-X_train, y_train, X_test, y_test = CachedDatasets().load_dataset("Trace")
-X_train = series_listH
-print(X_train.size)
-X_train = TimeSeriesScalerMeanVariance().fit_transform(X_train[:10])
-X_train = X_train[y_train < 4]  # Keep first 3 classes
-X_train = series_listH
-print(X_train)
-numpy.random.shuffle(X_train)
-# Keep only 50 time series
-X_train = TimeSeriesScalerMeanVariance().fit_transform(X_train[:20])
-
-X_train, y_train, X_test, y_test = CachedDatasets().load_dataset("Trace")
-print(X_train)
-X_train = TimeSeriesScalerMeanVariance().fit_transform(X_train[:3])
-print(X_train)
-print(X_train.shape)
-X_train = series_listH
-
-
-X_train = TimeSeriesResampler(sz=10).fit_transform(X_train)
-print(X_train.shape)
-
-"""
-
 import plotly.express as px
 
 import pandas as pd
 df = pd.read_csv(r'C:\Users\coste\Desktop\10ο Εξάμηνο\GOOG.csv')
 
-fig = px.line(df, x='timestamp', y='high')
+fig = px.line(df, x='timestamp', y='close')
 fig.show()
 
 main_df.set_index(symbol_listH)
@@ -367,3 +349,77 @@ Z = single(pdist(series_listH))
 print(Z)
 ax = squareform(cophenet(Z))
 print(squareform(cophenet(Z)))
+
+#second k-means
+
+seed = 0
+numpy.random.seed(seed)
+X_train, y_train, X_test, y_test = CachedDatasets().load_dataset("Trace")
+#X_train = X_train[y_train < 4]  # Keep first 3 classes
+X_train = series_listH
+#numpy.random.shuffle(X_train)
+# Keep only 50 time series
+#X_train = TimeSeriesScalerMeanVariance().fit_transform(X_train[:30])
+# Make time series  shorter
+X_train = TimeSeriesResampler(sz=40).fit_transform(X_train)
+sz = X_train.shape[1]
+
+
+# Create features
+#Average yearly return
+#Yearly Variance
+
+import pandas as pd
+from sklearn.cluster import KMeans
+from math import sqrt
+import  pylab as pl
+import numpy as np
+
+start = "3/16/2020"
+data = pd.read_csv(r"C:\Users\coste\PycharmProjects\Stock_Clustering\sp500_closes.csv", index_col = "timestamp")
+#print(data)
+#data = data.loc[start:]
+
+#Calculating annual mean returns and variances
+
+returns = data.pct_change().mean() * 252
+variance = data.pct_change().std() * sqrt(252)
+returns.columns = ["Returns"]
+variance.columns = ["Variance"]
+#Concatenating the returns and variances into a single data-frame
+ret_var = pd.concat([returns, variance], axis = 1).dropna()
+ret_var.columns = ["Returns","Variance"]
+
+print(ret_var)
+
+X = ret_var.values  # Converting ret_var into nummpy arraysse = []for k in range(2,15):
+sse = []
+for k in range(2,15):
+    kmeans = KMeans(n_clusters=k)
+    kmeans.fit(X)
+
+    sse.append(kmeans.inertia_)  # SSE for each n_clusterspl.plot(range(2,15), sse)
+pl.plot(range(2,15),sse)
+pl.title("Elbow Curve")
+pl.show()
+
+kmeans = KMeans(n_clusters = 8).fit(X)
+
+centroids = kmeans.cluster_centers_
+pl.scatter(X[:,0],X[:,1], c = kmeans.labels_, cmap ="rainbow")
+pl.show()
+
+ret_var.drop("AWK", inplace =True)
+print(returns.idxmax())
+X = ret_var.values
+kmeans =KMeans(n_clusters = 8).fit(X)
+centroids = kmeans.cluster_centers_
+pl.scatter(X[:,0],X[:,1], c = kmeans.labels_, cmap ="rainbow")
+pl.show()
+
+Company = pd.DataFrame(ret_var.index)
+cluster_labels = pd.DataFrame(kmeans.labels_)
+df = pd.concat([Company, cluster_labels],axis = 1)
+
+
+
