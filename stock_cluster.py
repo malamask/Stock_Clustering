@@ -466,13 +466,21 @@ calculated_sse = 0
 nuumber_of_clusters = 2  # input clusters - 1
 current_cluster = 0
 for s1 in centers_array:
-    current_cluster = 0
     serie_number = 0
     for cluster in clusters:
         print(cluster)
         if cluster == current_cluster:
             s2 = time_series[serie_number]
             series_DTW = dtw.distance(s1, s2)
-            calculated_sse = calculated_sse + series_DTW
+            calculated_sse = calculated_sse + np.math.pow(series_DTW, 2)
         serie_number += 1
-    cluster += 1
+    print('mpike re malaka')
+    print(current_cluster)
+    print("mexri edw")
+    current_cluster += 1
+
+print(calculated_sse)
+print(cluster)
+
+for cluster in clusters:
+    print(cluster)
