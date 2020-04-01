@@ -163,51 +163,6 @@ data_size = len(series_list)
 distance_matrix = np.zeros((data_size - 1, data_size - 1), float)
 sum = 0
 
-# start - DTW only https://pypi.org/project/fastdtw/
-import itertools
-from fastdtw import fastdtw
-from scipy.spatial.distance import euclidean
-"""
-for series1, series2 in itertools.combinations(series_list, 2):
-    # print(series1," ", series_list[series1])
-    # print("kai")
-    # print(series2," ", series_list[series2])
-    sum += 1
-    print(sum)
-    x = series_list[series1]
-    # print(x)
-    # print(type(x))
-    # print(series_list.__sizeof__())
-    y = series_list[series2]
-
-    distance, path = fastdtw(x, y, dist=euclidean)
-
-    # print(distance)
-    # print(path)
-
-"""
-
-# create distance matrix
-"""
-for series in series_list:
-    print(series ,"  ",series_list[series] )
-    print("epomeno")
-#calculate DTW
-
-    from fastdtw import fastdtw
-    from scipy.spatial.distance import euclidean
-
-    x = np.array([1, 2, 3, 3, 7])
-    print(x)
-    print(series_list.__sizeof__())
-    y = np.array([1, 2, 2, 2, 2, 2, 2, 4])
-
-    distance, path = fastdtw(x, y, dist=euclidean)
-
-    print(distance)
-    print(path)
-"""
-
 # hierarchical clustering
 # https://scikit-learn.org/stable/modules/clustering.html#hierarchical-clustering
 # https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html#sklearn.cluster.AgglomerativeClustering
@@ -265,26 +220,8 @@ plt.xlabel("Number of points in node (or index of point if no parenthesis).")
 plt.show()
 """
 
-
-
-
-
-
-# K-means
-
-"""
-from tslearn.generators import random_walks
-X = random_walks(n_ts=50, sz=32, d=1)
-print(X)
-print(series_listH)
-km = TimeSeriesKMeans(n_clusters=10, metric="euclidean", max_iter=30,random_state=0).fit(series_listH)
-#km = TimeSeriesKMeans(n_clusters=3, metric="euclidean", max_iter=5,random_state=0).fit(X)
-
-km.cluster_centers_.shape
-#print(series_listH)
-
-
-"""
+# K-means with DTW
+# https://tslearn.readthedocs.io/en/latest/auto_examples/plot_kmeans.html
 
 import numpy
 import matplotlib.pyplot as plt
@@ -310,22 +247,30 @@ X_train = TimeSeriesResampler(sz=40).fit_transform(X_train)
 print(X_train.shape)
 sz = X_train.shape[1]
 print(sz)
-# Euclidean k-means
-print("Euclidean k-means")
-km = TimeSeriesKMeans(n_clusters=3, verbose=True, random_state=seed)
-y_pred = km.fit_predict(X_train)
-plt.figure()
+
+# Soft-DTW-k-means
+print("Soft-DTW k-means")
+sdtw_km = TimeSeriesKMeans(n_clusters=3,
+                           metric="softdtw",
+                           metric_params={"gamma": .01},
+                           verbose=True,
+                           random_state=seed)
+y_pred = sdtw_km.fit_predict(X_train)
+i = 0
 for yi in range(3):
-    plt.subplot(1, 3, yi + 1)
+    plt.subplot(1, 3, 1 + yi)
     for xx in X_train[y_pred == yi]:
+        i += 1
+        print('seira:')
+        print(i)
         plt.plot(xx.ravel(), "k-", alpha=.2)
-    plt.plot(km.cluster_centers_[yi].ravel(), "r-")
+    plt.plot(sdtw_km.cluster_centers_[yi].ravel(), "r-")
     plt.xlim(0, sz)
-    plt.ylim(0, 2000)  # dollars
+    plt.ylim(0, 2000)
     plt.text(0.55, 0.85, 'Cluster %d' % (yi + 1),
              transform=plt.gca().transAxes)
     if yi == 1:
-        plt.title("Euclidean $k$-means")
+        plt.title("Soft-DTW $k$-means")
 
 plt.tight_layout()
 plt.show()
@@ -342,18 +287,7 @@ fig.show()
 
 main_df.set_index(symbol_listH)
 
-# hierarchical cophenetic
-
-from scipy.cluster.hierarchy import single, cophenet
-from scipy.spatial.distance import pdist, squareform
-
-X = series_listH
-Z = single(pdist(series_listH))
-print(Z)
-ax = squareform(cophenet(Z))
-print(squareform(cophenet(Z)))
-
-# second k-means
+# second Feature k-means
 
 seed = 0
 numpy.random.seed(seed)
@@ -377,7 +311,7 @@ from math import sqrt
 import pylab as pl
 import numpy as np
 
-start = "3/16/2020"
+# start = "3/16/2020"
 data = pd.read_csv(r"C:\Users\coste\PycharmProjects\Stock_Clustering\sp500_closes.csv", index_col="timestamp")
 # print(data)
 # data = data.loc[start:]
@@ -411,7 +345,7 @@ centroids = kmeans.cluster_centers_
 pl.scatter(X[:, 0], X[:, 1], c=kmeans.labels_, cmap="rainbow")
 pl.show()
 
-#ret_var.drop("AWK", inplace=True)
+# ret_var.drop("AWK", inplace=True)
 print(returns.idxmax())
 X = ret_var.values
 kmeans = KMeans(n_clusters=8).fit(X)
@@ -432,23 +366,38 @@ ds = dtw.distance_matrix(series_listH)
 
 print(type(ds))
 
-#hierarchical
-
-
-
-
-
-dsC = np.minimum(ds,ds.transpose()) ## create the summetrix distance matrix
-np.fill_diagonal(dsC,0)
-
+dsC = np.minimum(ds, ds.transpose())  ## create the summetrix distance matrix
+np.fill_diagonal(dsC, 0)
 
 import scipy.spatial.distance as ssd
+
 # convert the redundant n*n square matrix form into a condensed nC2 array
-distArray = ssd.squareform(dsC) # symmetric matrix
+distArray = ssd.squareform(dsC)  # symmetric matrix
 print(distArray)
-#data_matrix = [[0,0.8,0.9],[0.8,0,0.2],[0.9,0.2,0]]
+# data_matrix = [[0,0.8,0.9],[0.8,0,0.2],[0.9,0.2,0]]
 distList = dsC.tolist()
 
+# K-means with DTW
+
+X = distList
+sse = []
+for k in range(2, 15):
+    kmeans = KMeans(n_clusters=k)
+    kmeans.fit(X)
+
+    sse.append(kmeans.inertia_)  # SSE for each n_clusterspl.plot(range(2,15), sse)
+pl.plot(range(2, 15), sse)
+pl.title("Elbow Curve")
+pl.show()
+
+kmeans = KMeans(n_clusters=8).fit(X)
+
+centroids = kmeans.cluster_centers_
+pl.scatter(X[:, 0], X[:, 1], c=kmeans.labels_, cmap="rainbow")
+pl.show()
+
+
+# hierarchical with DTW
 
 def plot_dendrogram(model, **kwargs):
     # Create linkage matrix and then plot the dendrogram
@@ -465,16 +414,17 @@ def plot_dendrogram(model, **kwargs):
                 current_count += counts[child_idx - n_samples]
         counts[i] = current_count
 
-    linkage_matrix = np.column_stack([model.children_,model.distances_,
+    linkage_matrix = np.column_stack([model.children_, model.distances_,
                                       counts]).astype(float)
     # Plot the corresponding dendrogram
     dendrogram(
         linkage_matrix,
         **kwargs,
-        labels=main_df.columns # company symbols
+        labels=main_df.columns  # company symbols
     )
 
-model = AgglomerativeClustering(distance_threshold=0,affinity='precomputed',n_clusters=None, linkage='complete')
+
+model = AgglomerativeClustering(distance_threshold=0, affinity='precomputed', n_clusters=None, linkage='complete')
 model = model.fit(distList)
 
 plt.title('Hierarchical Clustering Dendrogram')
@@ -483,4 +433,46 @@ plot_dendrogram(model, truncate_mode='level', p=10)
 plt.xlabel("Number of points in node (or index of point if no parenthesis).")
 plt.show()
 
-# use
+# hierarcical with features
+
+model = AgglomerativeClustering(distance_threshold=0, n_clusters=None, linkage='complete')
+model = model.fit(ret_var)
+
+plt.title('Hierarchical Clustering Dendrogram')
+# plot the top three levels of the dendrogram
+plot_dendrogram(model, truncate_mode='level', p=10)
+plt.xlabel("Number of points in node (or index of point if no parenthesis).")
+plt.show()
+
+# cophenetic fucntion
+
+# hierarchical cophenetic
+
+from scipy.cluster.hierarchy import single, cophenet
+from scipy.spatial.distance import pdist, squareform
+
+X = distList
+Z = single(pdist(distList))
+print(Z)
+ax = squareform(cophenet(distList))
+print(squareform(cophenet(distList)))
+
+# calculate SSE for time series, giving cluster centers and time series in numpy type
+
+centers_array = sdtw_km.cluster_centers_
+clusters = sdtw_km.labels_
+time_series = X_train
+calculated_sse = 0
+nuumber_of_clusters = 2  # input clusters - 1
+current_cluster = 0
+for s1 in centers_array:
+    current_cluster = 0
+    serie_number = 0
+    for cluster in clusters:
+        print(cluster)
+        if cluster == current_cluster:
+            s2 = time_series[serie_number]
+            series_DTW = dtw.distance(s1, s2)
+            calculated_sse = calculated_sse + series_DTW
+        serie_number += 1
+    cluster += 1
