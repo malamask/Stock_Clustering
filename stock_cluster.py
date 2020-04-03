@@ -363,7 +363,7 @@ Company = pd.DataFrame(ret_var.index)
 cluster_labels = pd.DataFrame(kmeans.labels_)
 df = pd.concat([Company, cluster_labels], axis=1)
 
-# dtw illustration
+# dtw illustration for hierarchical
 from dtaidistance import dtw
 
 # print(type(symbol_listH))
