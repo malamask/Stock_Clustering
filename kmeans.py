@@ -27,33 +27,14 @@ from dtaidistance import dtw
 # end
 from tslearn.clustering import TimeSeriesKMeans
 
-r"""
-path = r'C:\Users\coste\PycharmProjects\Stock_Clustering\Data_Script'
-stock_files = glob.glob(os.path.join(path,"*.csv"))
-df = pd.concat((pd.read_csv(f) for f in stock_files))
 
-print(df.size)
-
-for a in df:
-    print(df)
-"""
 
 path = r'C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles'
 
 stock_files = glob.glob(path + "/*.csv")
 
 stocks = []
-"""
-for filename in stock_files:
-    df = pd.read_csv(filename, index_col = None, header = 0)
-    stocks.append(df)
-    df.head()
 
-frame = pd.concat(stocks, axis = 0, ignore_index = True, sort=False)
-
-# K-Means clustering
-print(df.head())
-"""
 
 # trasform files
 
@@ -121,13 +102,8 @@ numpy.random.seed(seed)
 print(seed)
 X_train, y_train, X_test, y_test = CachedDatasets().load_dataset("Trace")
 print(X_train)
-# X_train = X_train[y_train < 4]  # Keep first 3 classes
 X_train = series_listH
 print(X_train)
-# numpy.random.shuffle(X_train)
-# Keep only 30 time series
-# X_train = TimeSeriesScalerMeanVariance().fit_transform(X_train[:30])
-# Make time series shorter
 X_train = TimeSeriesResampler(sz=40).fit_transform(X_train)
 print(X_train.shape)
 sz = X_train.shape[1]
@@ -135,7 +111,7 @@ print(sz)
 
 # Soft-DTW-k-means
 print("Soft-DTW k-means")
-sdtw_km = TimeSeriesKMeans(n_clusters=3,
+sdtw_km = TimeSeriesKMeans(n_clusters=8,
                            metric="softdtw",
                            metric_params={"gamma": .01},
                            verbose=True,
