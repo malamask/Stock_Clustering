@@ -275,6 +275,7 @@ for yi in range(3):
 plt.tight_layout()
 plt.show()
 
+
 # test area
 import plotly.express as px
 
@@ -337,6 +338,8 @@ for k in range(2, 15):
     sse.append(kmeans.inertia_)  # SSE for each n_clusterspl.plot(range(2,15), sse)
 pl.plot(range(2, 15), sse)
 pl.title("Elbow Curve")
+pl.xlabel("Number of clusters")
+pl.ylabel("SSE")
 pl.show()
 
 kmeans = KMeans(n_clusters=8).fit(X)
@@ -378,7 +381,7 @@ print(distArray)
 distList = dsC.tolist()
 
 # K-means with DTW
-
+"""
 X = distList
 sse = []
 for k in range(2, 15):
@@ -395,6 +398,8 @@ kmeans = KMeans(n_clusters=8).fit(X)
 centroids = kmeans.cluster_centers_
 pl.scatter(X[:, 0], X[:, 1], c=kmeans.labels_, cmap="rainbow")
 pl.show()
+
+"""
 
 
 # hierarchical with DTW
@@ -447,40 +452,73 @@ plt.show()
 # cophenetic fucntion
 
 # hierarchical cophenetic
-
-from scipy.cluster.hierarchy import single, cophenet
-from scipy.spatial.distance import pdist, squareform
-
+"""
 X = distList
-Z = single(pdist(distList))
-print(Z)
-ax = squareform(cophenet(distList))
-print(squareform(cophenet(distList)))
+sse = []
+for k in range(2, 15):
+    kmeans = KMeans(n_clusters=k)
+    kmeans.fit(X)
+
+    sse.append(kmeans.inertia_)  # SSE for each n_clusterspl.plot(range(2,15), sse)
+pl.plot(range(2, 15), sse)
+pl.title("Elbow Curve")
+pl.show()
+
+kmeans = KMeans(n_clusters=8).fit(X)
+
+centroids = kmeans.cluster_centers_
+pl.scatter(X[:, 0], X[:, 1], c=kmeans.labels_, cmap="rainbow")
+pl.show()
+
+"""
 
 # calculate SSE for time series, giving cluster centers and time series in numpy type
+sse = []
+for k in range(3, 15):
+    sdtw_km = TimeSeriesKMeans(n_clusters=k,
+                               metric="softdtw",
+                               metric_params={"gamma": .01},
+                               verbose=True,
+                               random_state=seed)
+    y_pred = sdtw_km.fit_predict(X_train)
+    centers_array = sdtw_km.cluster_centers_
+    clusters = sdtw_km.labels_
+    time_series = X_train
+    calculated_sse = 0
+    nuumber_of_clusters = 2  # input clusters - 1
+    current_cluster = 0
+    for s1 in centers_array:
+        serie_number = 0
+        for cluster in clusters:
+            print(cluster)
+            if cluster == current_cluster:
+                s2 = time_series[serie_number]
+                series_DTW = dtw.distance(s1, s2)
+                calculated_sse = calculated_sse + np.math.pow(series_DTW, 2)
+            serie_number += 1
+        print('mpike re malaka')
+        print(current_cluster)
+        print("mexri edw")
+        current_cluster += 1
+    sse.append(calculated_sse)
 
-centers_array = sdtw_km.cluster_centers_
-clusters = sdtw_km.labels_
-time_series = X_train
-calculated_sse = 0
-nuumber_of_clusters = 2  # input clusters - 1
-current_cluster = 0
-for s1 in centers_array:
-    serie_number = 0
-    for cluster in clusters:
-        print(cluster)
-        if cluster == current_cluster:
-            s2 = time_series[serie_number]
-            series_DTW = dtw.distance(s1, s2)
-            calculated_sse = calculated_sse + np.math.pow(series_DTW, 2)
-        serie_number += 1
-    print('mpike re malaka')
-    print(current_cluster)
-    print("mexri edw")
-    current_cluster += 1
+pl.plot(range(3,15), sse)
+pl.title("Elbow Curve")
+pl.xlabel("Number of clusters")
+pl.ylabel("SSE")
+pl.show()
+
+
 
 print(calculated_sse)
 print(cluster)
 
-for cluster in clusters:
-    print(cluster)
+#cophenetic - features
+
+from scipy.cluster.hierarchy import single, cophenet
+from scipy.spatial.distance import pdist, squareform
+
+Z = single(pdist(model.distances_))
+cophenet(Z)
+print(squareform(cophenet(Z)))
+
