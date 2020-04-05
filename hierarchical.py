@@ -1,40 +1,17 @@
 import os
-import csv
-from math import sqrt
-import numpy as np
-import pandas as pd
-from scipy.cluster.vq import kmeans, vq
 import glob
-import datetime as datetime
-from matplotlib import pyplot as plt
-import pandas_datareader.data as web
-from matplotlib import ticker
-from sklearn.cluster import KMeans
-
-# start of extra imports
-from pylab import plot, show
-from numpy import vstack, array
-from numpy.random import rand
+from pylab import plot, show, mpl
 import numpy as np
-from scipy.cluster.vq import kmeans, vq
 import pandas as pd
-import pandas_datareader as dr
 from math import sqrt
-from sklearn.cluster import KMeans
-from matplotlib import pyplot as plt
-from matplotlib import pyplot as plt
 from scipy.cluster.hierarchy import dendrogram
 from sklearn.cluster import AgglomerativeClustering
-import pandas as pd
-from sklearn.cluster import KMeans
-from math import sqrt
-import pylab as pl
-import numpy as np
-
-
-# end
-from tslearn.clustering import TimeSeriesKMeans
-
+import seaborn as sns
+import matplotlib.pyplot as plt
+from fastcluster import linkage as linkageV
+from scipy.cluster.hierarchy import dendrogram, linkage
+from scipy.spatial.distance import pdist, squareform
+from scipy.cluster.hierarchy import cophenet,ward
 
 
 path = r'C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles'
@@ -43,12 +20,11 @@ stock_files = glob.glob(path + "/*.csv")
 
 stocks = []
 
-
 # trasform files
 
 main_df = pd.DataFrame()
 for filename in stock_files:
-    df = pd.read_csv(filename, nrows=70)  # number of daily prices
+    df = pd.read_csv(filename, nrows=200)  # number of daily prices
     print(filename)
     if 'timestamp' in df:
 
@@ -73,14 +49,11 @@ series_listH = []
 symbol_listH = []
 # seperate the
 for symbol, value in main_df.iteritems():
-    # print(key, value)
-    # print(key)
     print()
     print(symbol)
     series_list[symbol] = np.array([], float)
     tempList = np.array([], float)
     for date, price in value.items():  # nan row and nan first values
-        # series_list[]
         tempList = np.append(tempList, price)
         print(f"Index : {date}, Value : {price}")
         series_list[symbol] = np.append(series_list[symbol], price)
@@ -89,34 +62,11 @@ for symbol, value in main_df.iteritems():
     symbol_listH.append(symbol)
 
 
-series_listH = np.asarray(series_listH, dtype=np.float32) # create numpy array
+series_listH = np.asarray(series_listH, dtype=np.float32)
 
-
-# dtw illustration for hierarchical
-from dtaidistance import dtw
-
-# print(type(symbol_listH))
-
-ds = dtw.distance_matrix(series_listH)
-
-print(type(ds))
-
-dsC = np.minimum(ds, ds.transpose())  ## create the summetrix distance matrix
-np.fill_diagonal(dsC, 0)
-
-import scipy.spatial.distance as ssd
-
-# convert the redundant n*n square matrix form into a condensed nC2 array
-distArray = ssd.squareform(dsC)  # symmetric matrix
-print(distArray)
-# data_matrix = [[0,0.8,0.9],[0.8,0,0.2],[0.9,0.2,0]]
-distList = dsC.tolist()
-
-# hierarchical with DTW
-
+#hierarchical dendogram
 def plot_dendrogram(model, **kwargs):
     # Create linkage matrix and then plot the dendrogram
-
     # create the counts of samples under each node
     counts = np.zeros(model.children_.shape[0])
     n_samples = len(model.labels_)
@@ -139,6 +89,23 @@ def plot_dendrogram(model, **kwargs):
     )
 
 
+# hierarchical with DTW
+
+# dtw illustration for hierarchical
+from dtaidistance import dtw
+
+ds = dtw.distance_matrix(series_listH)
+
+dsC = np.minimum(ds, ds.transpose())  ## create the summetrix distance matrix
+np.fill_diagonal(dsC, 0)
+
+import scipy.spatial.distance as ssd
+
+# convert the redundant n*n square matrix form into a condensed nC2 array
+distArray = ssd.squareform(dsC)  # symmetric matrix
+distList = dsC.tolist()
+
+
 model = AgglomerativeClustering(distance_threshold=0, affinity='precomputed', n_clusters=None, linkage='complete')
 model = model.fit(distList)
 
@@ -148,14 +115,8 @@ plot_dendrogram(model, truncate_mode='level', p=10)
 plt.xlabel("Number of points in node (or index of point if no parenthesis).")
 plt.show()
 
-
-# hierarcical with features
-
-
-# start = "3/16/2020"
+#calculate features
 data = pd.read_csv(r"C:\Users\coste\PycharmProjects\Stock_Clustering\sp500_closes.csv", index_col="timestamp")
-# print(data)
-# data = data.loc[start:]
 
 # Calculating annual mean returns and variances
 
@@ -167,6 +128,7 @@ variance.columns = ["Variance"]
 ret_var = pd.concat([returns, variance], axis=1).dropna()
 ret_var.columns = ["Returns", "Variance"]
 
+# hierarcical with features
 
 model = AgglomerativeClustering(distance_threshold=0, n_clusters=None, linkage='complete')
 model = model.fit(ret_var)
@@ -177,11 +139,91 @@ plot_dendrogram(model, truncate_mode='level', p=10)
 plt.xlabel("Number of points in node (or index of point if no parenthesis).")
 plt.show()
 
-#cophenetic - features
+#Evaluation
+# create n*n distance matrix with features
+Z = squareform(pdist(ret_var)) #nxn distance matrix
 
-from scipy.cluster.hierarchy import single, cophenet
-from scipy.spatial.distance import pdist, squareform
 
-Z = single(pdist(ret_var))
-cophenet(Z)
-print(squareform(cophenet(Z)))
+#visualize distances General code
+## sorting area
+
+def seriation(Z,N,cur_index):
+    if cur_index < N:
+        return [cur_index]
+    else:
+        left = int(Z[cur_index - N, 0])
+        right = int(Z[cur_index - N, 1])
+        return (seriation(Z, N, left) + seriation(Z, N, right))
+
+
+def compute_serial_matrix(dist_mat,method="ward"): #default: ward
+    N = len(dist_mat)
+    flat_dist_mat = squareform(dist_mat)
+    res_linkage = linkageV(flat_dist_mat, method=method, preserve_input=True)
+    res_order = seriation(res_linkage, N, N + N - 2)
+    seriated_dist = np.zeros((N, N))
+    a, b = np.triu_indices(N, k=1)
+    seriated_dist[a, b] = dist_mat[[res_order[i] for i in a], [res_order[j] for j in b]]
+    seriated_dist[b, a] = seriated_dist[a, b]
+
+    return seriated_dist, res_order, res_linkage
+
+
+#DTW visualization
+dist_mat = dsC #distance matrix
+corr = main_df.corr()
+methods = ["ward","single","average","complete"]
+for method in methods:
+    print("Method:\t",method)
+    N = len(series_listH)
+    ordered_dist_mat, res_order, res_linkage = compute_serial_matrix(dist_mat, method)
+    plt.pcolormesh(ordered_dist_mat,cmap=mpl.cm.jet) #use colormap
+    plt.colorbar()
+    plt.xlim([0,N])
+    plt.ylim([0,N])
+    #CPCC calculation
+    Z = linkage(corr, method)
+    c, coph_dists = cophenet(Z, pdist(corr))
+    plt.title("Distance Visualization - Features Method: " + method + " CPCC = " + str(c))
+    plt.show()
+
+
+#cophenetic for DTW
+#https://silburt.github.io/blog/stock_correlation.html
+
+corr = main_df.corr()
+Z = linkage(corr,'ward')
+c,coph_dists = cophenet(Z,pdist(corr))
+
+
+
+#Features visualization
+ret_var_array = ret_var.to_numpy()
+dist_mat = pdist(ret_var)
+methods = ["ward","single","average","complete"]
+for method in methods:
+    print("Method:\t",method)
+    N = len(ret_var)
+    ordered_dist_mat, res_order, res_linkage = compute_serial_matrix(squareform(dist_mat), method)
+    plt.pcolormesh(ordered_dist_mat,cmap=mpl.cm.jet) #use colormap
+    plt.colorbar()
+    plt.xlim([0,N])
+    plt.ylim([0,N])
+    #cpcc calculation
+    Z = linkage(pdist(ret_var_array), method)
+    c, coph_dists = cophenet(Z, pdist(ret_var))
+    #end
+    plt.title("Distance Visualization -DTW Method: " + method + " CPCC = " + str(c))
+    plt.show()
+
+
+#cophenetic for features
+
+ret_var_array = ret_var.to_numpy()
+#Z= single(pdist(ret_var_array))
+#Z = ward(ret_var_array)
+Z = linkage(pdist(ret_var_array),'ward')
+c,coph_dists = cophenet(Z,pdist(ret_var))
+print(c)
+
+

@@ -1,33 +1,20 @@
 import os
-import csv
-from math import sqrt
-import numpy as np
-import pandas as pd
-from scipy.cluster.vq import kmeans, vq
 import glob
-import datetime as datetime
-from matplotlib import pyplot as plt
-import pandas_datareader.data as web
-from matplotlib import ticker
-from sklearn.cluster import KMeans
-
-# start of extra imports
-from pylab import plot, show
-from numpy import vstack, array
-from numpy.random import rand
 import numpy as np
-from scipy.cluster.vq import kmeans, vq
 import pandas as pd
-import pandas_datareader as dr
-from math import sqrt
-from sklearn.cluster import KMeans
-from matplotlib import pyplot as plt
 from dtaidistance import dtw
+import numpy
+import matplotlib.pyplot as plt
 
-# end
 from tslearn.clustering import TimeSeriesKMeans
-
-
+from tslearn.datasets import CachedDatasets
+from tslearn.preprocessing import TimeSeriesScalerMeanVariance, \
+    TimeSeriesResampler
+import pandas as pd
+from sklearn.cluster import KMeans
+from math import sqrt
+import pylab as pl
+import numpy as np
 
 path = r'C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles'
 
@@ -40,7 +27,7 @@ stocks = []
 
 main_df = pd.DataFrame()
 for filename in stock_files:
-    df = pd.read_csv(filename, nrows=70)  # number of daily prices
+    df = pd.read_csv(filename, nrows=200)  # number of daily prices
     print(filename)
     if 'timestamp' in df:
 
@@ -81,21 +68,12 @@ for symbol, value in main_df.iteritems():
     symbol_listH.append(symbol)
 
 # visualization
-print(series_listH)
 series_listH = np.asarray(series_listH, dtype=np.float32)
-print(series_listH)
-
 
 # K-means with DTW
 # https://tslearn.readthedocs.io/en/latest/auto_examples/plot_kmeans.html
 
-import numpy
-import matplotlib.pyplot as plt
 
-from tslearn.clustering import TimeSeriesKMeans
-from tslearn.datasets import CachedDatasets
-from tslearn.preprocessing import TimeSeriesScalerMeanVariance, \
-    TimeSeriesResampler
 
 seed = 0
 numpy.random.seed(seed)
@@ -141,16 +119,10 @@ plt.show()
 # Average yearly return
 # Yearly Variance
 
-import pandas as pd
-from sklearn.cluster import KMeans
-from math import sqrt
-import pylab as pl
-import numpy as np
 
-# start = "3/16/2020"
+
 data = pd.read_csv(r"C:\Users\coste\PycharmProjects\Stock_Clustering\sp500_closes.csv", index_col="timestamp")
-# print(data)
-# data = data.loc[start:]
+
 
 # Calculating annual mean returns and variances
 
@@ -219,9 +191,7 @@ for k in range(3, 15):
                 series_DTW = dtw.distance(s1, s2)
                 calculated_sse = calculated_sse + np.math.pow(series_DTW, 2)
             serie_number += 1
-        print('mpike re malaka')
         print(current_cluster)
-        print("mexri edw")
         current_cluster += 1
     sse.append(calculated_sse)
 
@@ -231,3 +201,51 @@ pl.xlabel("Number of clusters")
 pl.ylabel("SSE")
 pl.show()
 
+#visualize stocks for Kmeans with features
+symbol_array = np.array(symbol_listH)
+label_array = kmeans.labels_
+number_of_clusters = 8
+
+for k in range(0,number_of_clusters):
+    plot_df = pd.DataFrame()
+    print(k)
+    symbol_counter=0;
+    for cluster in label_array:
+        print(symbol_array[symbol_counter])
+        if cluster == k:
+            print(symbol_array[symbol_counter])
+            if main_df.empty:
+                plot_df = main_df[symbol_array[symbol_counter]]
+            else:
+                plot_df = plot_df.join(main_df[symbol_array[symbol_counter]], how='outer')
+            #add the company in plot
+        symbol_counter += 1
+    plot_df.plot(figsize=(15,8))
+    plt.ylabel('Price')
+    plt.show()
+
+
+
+#visualize stocks for Kmeans with DTW
+
+symbol_array = np.array(symbol_listH)
+label_array = sdtw_km.labels_
+number_of_clusters = 8
+
+for k in range(0,number_of_clusters):
+    plot_df = pd.DataFrame()
+    print(k)
+    symbol_counter=0;
+    for cluster in label_array:
+        print(symbol_array[symbol_counter])
+        if cluster == k:
+            print(symbol_array[symbol_counter])
+            if main_df.empty:
+                plot_df = main_df[symbol_array[symbol_counter]]
+            else:
+                plot_df = plot_df.join(main_df[symbol_array[symbol_counter]], how='outer')
+            #add the company in plot
+        symbol_counter += 1
+    plot_df.plot(figsize=(15,8))
+    plt.ylabel('Price')
+    plt.show()
