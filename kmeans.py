@@ -120,7 +120,6 @@ plt.show()
 # Yearly Variance
 
 
-
 data = pd.read_csv(r"C:\Users\coste\PycharmProjects\Stock_Clustering\sp500_closes.csv", index_col="timestamp")
 
 

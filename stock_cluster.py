@@ -22,7 +22,6 @@ import pandas_datareader as dr
 from math import sqrt
 from sklearn.cluster import KMeans
 from matplotlib import pyplot as plt
-
 # end
 from tslearn.clustering import TimeSeriesKMeans
 
