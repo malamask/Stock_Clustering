@@ -175,6 +175,8 @@ X = ret_var.values
 kmeans = KMeans(n_clusters=8).fit(X)
 centroids = kmeans.cluster_centers_
 pl.title("Kmeans Clustering without outlier AMD clusters = 8 ")
+plt.xlabel("Returns")
+plt.ylabel("Variance")
 pl.scatter(X[:, 0], X[:, 1], c=kmeans.labels_, cmap="rainbow")
 pl.show()
 

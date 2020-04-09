@@ -197,7 +197,7 @@ for method in methods:
     #CPCC calculation
     Z = linkage(corr, method)
     c, coph_dists = cophenet(Z, pdist(corr))
-    plt.title("Distance Visualization - Features Method: " + method + " CPCC = " + str(c))
+    plt.title("Distance Visualization - DTW  Method: " + method + " CPCC = " + str(c))
     plt.show()
 
 
@@ -226,7 +226,7 @@ for method in methods:
     Z = linkage(pdist(ret_var_array), method)
     c, coph_dists = cophenet(Z, pdist(ret_var))
     #end
-    plt.title("Distance Visualization -DTW Method: " + method + " CPCC = " + str(c))
+    plt.title("Distance Visualization - Features Method: " + method + " CPCC = " + str(c))
     plt.show()
 
 
