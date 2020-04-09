@@ -5,7 +5,6 @@ import pandas as pd
 from dtaidistance import dtw
 import numpy
 import matplotlib.pyplot as plt
-
 from tslearn.clustering import TimeSeriesKMeans
 from tslearn.datasets import CachedDatasets
 from tslearn.preprocessing import TimeSeriesScalerMeanVariance, \
@@ -21,7 +20,6 @@ path = r'C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles'
 stock_files = glob.glob(path + "/*.csv")
 
 stocks = []
-
 
 # trasform files
 
@@ -72,8 +70,6 @@ series_listH = np.asarray(series_listH, dtype=np.float32)
 
 # K-means with DTW
 # https://tslearn.readthedocs.io/en/latest/auto_examples/plot_kmeans.html
-
-
 
 seed = 0
 numpy.random.seed(seed)
@@ -152,16 +148,39 @@ kmeans = KMeans(n_clusters=8).fit(X)
 
 centroids = kmeans.cluster_centers_
 pl.scatter(X[:, 0], X[:, 1], c=kmeans.labels_, cmap="rainbow")
+pl.title("Kmeans Clustering clusters = 8 ")
+plt.xlabel("Returns")
+plt.ylabel("Variance")
 pl.show()
 
-# ret_var.drop("AWK", inplace=True)
+#remove outlier "AMD" index
 print(returns.idxmax())
+ret_var.drop("AMD", inplace=True)
+
+
 X = ret_var.values
 kmeans = KMeans(n_clusters=8).fit(X)
 centroids = kmeans.cluster_centers_
+pl.title("Kmeans Clustering without outlier AMD clusters = 8 ")
 pl.scatter(X[:, 0], X[:, 1], c=kmeans.labels_, cmap="rainbow")
 pl.show()
 
+
+
+#repaut ret_var create
+"""
+returns = data.pct_change().mean() * 252
+variance = data.pct_change().std() * sqrt(252)
+returns.columns = ["Returns"]
+variance.columns = ["Variance"]
+# Concatenating the returns and variances into a single data-frame
+ret_var = pd.concat([returns, variance], axis=1).dropna()
+ret_var.columns = ["Returns", "Variance"]
+X = ret_var.values  # Converting ret_var into nummpy arraysse = []for k in range(2,15):
+"""
+
+
+#SSE
 Company = pd.DataFrame(ret_var.index)
 cluster_labels = pd.DataFrame(kmeans.labels_)
 df = pd.concat([Company, cluster_labels], axis=1)
@@ -220,6 +239,7 @@ for k in range(0,number_of_clusters):
             #add the company in plot
         symbol_counter += 1
     plot_df.plot(figsize=(15,8))
+    plt.title("Stocks of the same cluster - Kmeas with features")
     plt.ylabel('Price')
     plt.show()
 
@@ -246,5 +266,6 @@ for k in range(0,number_of_clusters):
             #add the company in plot
         symbol_counter += 1
     plot_df.plot(figsize=(15,8))
+    plt.title("Stocks of the same cluster - Kmeas with DTW")
     plt.ylabel('Price')
     plt.show()

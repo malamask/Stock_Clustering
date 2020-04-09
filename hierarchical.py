@@ -13,11 +13,8 @@ from scipy.cluster.hierarchy import dendrogram, linkage
 from scipy.spatial.distance import pdist, squareform
 from scipy.cluster.hierarchy import cophenet,ward
 
-
 path = r'C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles'
-
 stock_files = glob.glob(path + "/*.csv")
-
 stocks = []
 
 # trasform files
@@ -109,11 +106,16 @@ distList = dsC.tolist()
 model = AgglomerativeClustering(distance_threshold=0, affinity='precomputed', n_clusters=None, linkage='complete')
 model = model.fit(distList)
 
-plt.title('Hierarchical Clustering Dendrogram')
+plt.title('Hierarchical Clustering Dendrogram with DTW')
 # plot the top three levels of the dendrogram
 plot_dendrogram(model, truncate_mode='level', p=10)
 plt.xlabel("Number of points in node (or index of point if no parenthesis).")
 plt.show()
+
+#clusters for visualization
+clustersDTW = model.children_
+nsamplesDTW = len(model.labels_)
+
 
 #calculate features
 data = pd.read_csv(r"C:\Users\coste\PycharmProjects\Stock_Clustering\sp500_closes.csv", index_col="timestamp")
@@ -133,11 +135,15 @@ ret_var.columns = ["Returns", "Variance"]
 model = AgglomerativeClustering(distance_threshold=0, n_clusters=None, linkage='complete')
 model = model.fit(ret_var)
 
-plt.title('Hierarchical Clustering Dendrogram')
+plt.title('Hierarchical Clustering Dendrogram with Features')
 # plot the top three levels of the dendrogram
 plot_dendrogram(model, truncate_mode='level', p=10)
 plt.xlabel("Number of points in node (or index of point if no parenthesis).")
 plt.show()
+
+#clusters of visualization
+clustersFeatures = model.children_
+nsamplesFeatures = len(model.labels_)
 
 #Evaluation
 # create n*n distance matrix with features
@@ -225,5 +231,136 @@ ret_var_array = ret_var.to_numpy()
 Z = linkage(pdist(ret_var_array),'ward')
 c,coph_dists = cophenet(Z,pdist(ret_var))
 print(c)
+
+# Visualize stocks
+"""
+counts = np.zeros(model.children_.shape[0])
+n_samples = len(model.labels_)
+for i, merge in enumerate(model.children_):
+    current_count = 0
+    print(merge)
+    for child_idx in merge:
+        if child_idx < n_samples:
+            current_count += 1  # leaf node
+            #print(symbol_listH[child_idx])
+        else:
+            print("kseno id")
+            print(child_idx)
+            current_count += counts[child_idx - n_samples]
+            #print(child_idx)
+    counts[i] = current_count
+    #print(counts[i])
+    print("epomeni omada parakalw")
+
+
+linkage_matrix = np.column_stack([model.children_, model.distances_,
+                                      counts]).astype(float)
+
+linkageDf = pd.DataFrame(linkage_matrix)
+"""
+def create_symbol_sets(clusters , number_of_samples ,next_pos,symbols):
+    symbol_list = []
+    new_pair = clusters[next_pos]
+    #first_segment
+    if new_pair[0] < number_of_samples: # exists in symbol_list
+        symbol_list.append(symbols[new_pair[0]])
+    else:
+        next_pos = new_pair[0] - number_of_samples
+        symbol_list.append(create_symbol_sets(clusters , number_of_samples ,next_pos,symbols))
+
+    #second segment
+    if new_pair[1] < number_of_samples: # exists in symbol_list
+        symbol_list.append(symbols[new_pair[1]])
+    else:
+        next_pos = new_pair[1] - number_of_samples
+        #print(next_pos)
+        symbol_list.append(create_symbol_sets(clusters, number_of_samples, next_pos, symbols))
+
+    return symbol_list
+
+#fuction to iterate all the sub lists
+def traverse(o, tree_types=(list, tuple)):
+    if isinstance(o, tree_types):
+        for value in o:
+            for subvalue in traverse(value, tree_types):
+                yield subvalue
+    else:
+        yield o
+
+
+# visualize clusters with features
+
+for i, merge in enumerate(clustersFeatures):
+    print(i)
+    plot_df = pd.DataFrame()
+    symbol_plots = []
+    pair=0
+    for child_idx in merge:
+        pair+=1
+        if child_idx < nsamplesFeatures:
+            #print(symbol_listH[child_idx])
+            #plot for the pairs
+            symbol_plots.append(symbol_listH[child_idx])
+        else:
+            next_position = child_idx - nsamplesFeatures
+            symbol_plots = create_symbol_sets(clustersFeatures, nsamplesFeatures,next_position,symbol_listH)
+
+    print("plotaroyme ta parakatw symbolakia")
+    #plot current cluster using symbol_plots
+    print(list(traverse(symbol_plots)))
+    for s in list(traverse(symbol_plots)):
+        if main_df.empty:
+            plot_df = main_df[s]
+        else:
+            plot_df = plot_df.join(main_df[s], how='outer')
+    plot_df.plot(figsize=(15, 8))
+    plt.title("Stocks of the same cluster - Hierarchical with Features")
+    plt.ylabel('Price')
+    plt.show()
+
+
+
+# visualize clusters with DTW
+
+for i, merge in enumerate(clustersDTW):
+    print(i)
+    plot_df = pd.DataFrame()
+    symbol_plots = []
+    pair=0
+    for child_idx in merge:
+        pair+=1
+        if child_idx < nsamplesDTW:
+            #print(symbol_listH[child_idx])
+            #plot for the pairs
+            symbol_plots.append(symbol_listH[child_idx])
+        else:
+            next_position = child_idx - nsamplesDTW
+            symbol_plots = create_symbol_sets(clustersDTW, nsamplesDTW,next_position,symbol_listH)
+
+    print("plotaroyme ta parakatw symbolakia")
+    #plot current cluster using symbol_plots
+    print(list(traverse(symbol_plots)))
+    for s in list(traverse(symbol_plots)):
+        if main_df.empty:
+            plot_df = main_df[s]
+        else:
+            plot_df = plot_df.join(main_df[s], how='outer')
+    plot_df.plot(figsize=(15, 8))
+    plt.title("Stocks of the same cluster - Hierarchical with DTW")
+    plt.ylabel('Price')
+    plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
