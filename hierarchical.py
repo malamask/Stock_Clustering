@@ -233,31 +233,7 @@ c,coph_dists = cophenet(Z,pdist(ret_var))
 print(c)
 
 # Visualize stocks
-"""
-counts = np.zeros(model.children_.shape[0])
-n_samples = len(model.labels_)
-for i, merge in enumerate(model.children_):
-    current_count = 0
-    print(merge)
-    for child_idx in merge:
-        if child_idx < n_samples:
-            current_count += 1  # leaf node
-            #print(symbol_listH[child_idx])
-        else:
-            print("kseno id")
-            print(child_idx)
-            current_count += counts[child_idx - n_samples]
-            #print(child_idx)
-    counts[i] = current_count
-    #print(counts[i])
-    print("epomeni omada parakalw")
 
-
-linkage_matrix = np.column_stack([model.children_, model.distances_,
-                                      counts]).astype(float)
-
-linkageDf = pd.DataFrame(linkage_matrix)
-"""
 def create_symbol_sets(clusters , number_of_samples ,next_pos,symbols):
     symbol_list = []
     new_pair = clusters[next_pos]
@@ -291,7 +267,7 @@ def traverse(o, tree_types=(list, tuple)):
 # visualize clusters with features
 
 for i, merge in enumerate(clustersFeatures):
-    print(i)
+    print(merge)
     plot_df = pd.DataFrame()
     symbol_plots = []
     pair=0
@@ -303,7 +279,7 @@ for i, merge in enumerate(clustersFeatures):
             symbol_plots.append(symbol_listH[child_idx])
         else:
             next_position = child_idx - nsamplesFeatures
-            symbol_plots = create_symbol_sets(clustersFeatures, nsamplesFeatures,next_position,symbol_listH)
+            symbol_plots.append(create_symbol_sets(clustersFeatures, nsamplesFeatures,next_position,symbol_listH))
 
     print("plotaroyme ta parakatw symbolakia")
     #plot current cluster using symbol_plots
@@ -335,7 +311,7 @@ for i, merge in enumerate(clustersDTW):
             symbol_plots.append(symbol_listH[child_idx])
         else:
             next_position = child_idx - nsamplesDTW
-            symbol_plots = create_symbol_sets(clustersDTW, nsamplesDTW,next_position,symbol_listH)
+            symbol_plots.append(create_symbol_sets(clustersDTW, nsamplesDTW,next_position,symbol_listH))
 
     print("plotaroyme ta parakatw symbolakia")
     #plot current cluster using symbol_plots
