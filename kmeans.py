@@ -15,13 +15,17 @@ from math import sqrt
 import pylab as pl
 import numpy as np
 
+#Path with all the .csv stock files
 path = r'C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles'
 
 stock_files = glob.glob(path + "/*.csv")
 
 stocks = []
 
-# trasform files
+# Trasform files
+# The code bellow, load all the csv stock files and create the basic data frame
+# With date rows and company-symbol columns
+# The main_df data frame is saved as .csv.
 
 main_df = pd.DataFrame()
 for filename in stock_files:
@@ -42,9 +46,13 @@ for filename in stock_files:
 
 print(main_df.head())
 #main_df = main_df.fillna(main_df.mean())
+#Remove the rows with N/A value
 main_df = main_df.dropna(axis=0, how='any', thresh=None, subset=None, inplace=False)
 main_df.to_csv('sp500_closes.csv')
 
+
+#Create one dictionary list and two parallel lists
+# The dictionary list's key is symbol name and the value is a numpy array with daily close prices
 series_list = {}  # use python dictionary
 series_listH = []
 symbol_listH = []
@@ -83,6 +91,8 @@ print(X_train.shape)
 sz = X_train.shape[1]
 print(sz)
 
+#The code bellow is an illustration for Kmeans with DTW
+# The given nubmer for clusters is 8
 # Soft-DTW-k-means
 print("Soft-DTW k-means")
 sdtw_km = TimeSeriesKMeans(n_clusters=8,
@@ -131,6 +141,7 @@ ret_var.columns = ["Returns", "Variance"]
 
 print(ret_var)
 
+# Plot elbow curve to determine the identical number of clusters for Kmeans with features
 X = ret_var.values  # Converting ret_var into nummpy arraysse = []for k in range(2,15):
 sse = []
 for k in range(2, 15):
@@ -144,6 +155,8 @@ pl.xlabel("Number of clusters")
 pl.ylabel("SSE")
 pl.show()
 
+
+#Create scatter plot with the clusters in x,y axis
 kmeans = KMeans(n_clusters=8).fit(X)
 
 centroids = kmeans.cluster_centers_
@@ -157,7 +170,7 @@ pl.show()
 print(returns.idxmax())
 ret_var.drop("AMD", inplace=True)
 
-
+#Plot the new clusters without the "AMD" outlier
 X = ret_var.values
 kmeans = KMeans(n_clusters=8).fit(X)
 centroids = kmeans.cluster_centers_
@@ -167,20 +180,9 @@ pl.show()
 
 
 
-#repaut ret_var create
-"""
-returns = data.pct_change().mean() * 252
-variance = data.pct_change().std() * sqrt(252)
-returns.columns = ["Returns"]
-variance.columns = ["Variance"]
-# Concatenating the returns and variances into a single data-frame
-ret_var = pd.concat([returns, variance], axis=1).dropna()
-ret_var.columns = ["Returns", "Variance"]
-X = ret_var.values  # Converting ret_var into nummpy arraysse = []for k in range(2,15):
-"""
-
-
 #SSE
+#Calculate SSE and plot the elbow curve
+# to choose with number of clusters is demanded to achieve the smallest value
 Company = pd.DataFrame(ret_var.index)
 cluster_labels = pd.DataFrame(kmeans.labels_)
 df = pd.concat([Company, cluster_labels], axis=1)

@@ -18,7 +18,9 @@ stock_files = glob.glob(path + "/*.csv")
 stocks = []
 
 # trasform files
-
+# The code bellow, load all the csv stock files and create the basic data frame
+# With date rows and company-symbol columns
+# The main_df data frame is saved as .csv.
 main_df = pd.DataFrame()
 for filename in stock_files:
     df = pd.read_csv(filename, nrows=200)  # number of daily prices
@@ -38,9 +40,14 @@ for filename in stock_files:
 
 print(main_df.head())
 #main_df = main_df.fillna(main_df.mean())
+#Remove the rows with N/A value
 main_df = main_df.dropna(axis=0, how='any', thresh=None, subset=None, inplace=False)
 main_df.to_csv('sp500_closes.csv')
 
+
+
+#Create one dictionary list and two parallel lists
+# The dictionary list's key is symbol name and the value is a numpy array with daily close prices
 series_list = {}  # use python dictionary
 series_listH = []
 symbol_listH = []
@@ -281,9 +288,6 @@ for i, merge in enumerate(clustersFeatures):
             next_position = child_idx - nsamplesFeatures
             symbol_plots.append(create_symbol_sets(clustersFeatures, nsamplesFeatures,next_position,symbol_listH))
 
-    print("plotaroyme ta parakatw symbolakia")
-    #plot current cluster using symbol_plots
-    print(list(traverse(symbol_plots)))
     for s in list(traverse(symbol_plots)):
         if main_df.empty:
             plot_df = main_df[s]
@@ -313,9 +317,6 @@ for i, merge in enumerate(clustersDTW):
             next_position = child_idx - nsamplesDTW
             symbol_plots.append(create_symbol_sets(clustersDTW, nsamplesDTW,next_position,symbol_listH))
 
-    print("plotaroyme ta parakatw symbolakia")
-    #plot current cluster using symbol_plots
-    print(list(traverse(symbol_plots)))
     for s in list(traverse(symbol_plots)):
         if main_df.empty:
             plot_df = main_df[s]

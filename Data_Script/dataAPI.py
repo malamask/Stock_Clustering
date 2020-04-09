@@ -5,6 +5,10 @@ import time # due to API restrictions
 import csv
 from os.path import join as pjoin
 
+# API call from Alpha Vintage
+#Tt returns the first 50 companies of S&P500 for hole the operation period.
+#Symbols are loaded from a .json file.
+#All the stocks are saved in a folder as .csv files
 delay_condition = 0;
 companies = 0;
 with open(r'C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles\S&P500.json') as json_file:
