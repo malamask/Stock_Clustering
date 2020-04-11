@@ -98,7 +98,7 @@ def plot_dendrogram(model, **kwargs):
 # dtw illustration for hierarchical
 from dtaidistance import dtw
 
-ds = dtw.distance_matrix(series_listH)
+ds = dtw.distance_matrix(series_listH) #euclidean method
 
 dsC = np.minimum(ds, ds.transpose())  ## create the summetrix distance matrix
 np.fill_diagonal(dsC, 0)
