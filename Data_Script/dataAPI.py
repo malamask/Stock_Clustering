@@ -18,13 +18,13 @@ with open(r'C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles\S&P500.jso
         if companies == 50:
             break
         companies += 1
-        # print('To delay einai toso ' + int(delay_condition))
+       
         delay_condition += 1
         if delay_condition == 5:
             print('Reached ')
             time.sleep(70)
             delay_condition = 0
-        #print(p['Name'])
+        
         parameters = {
             'function': 'TIME_SERIES_DAILY',
             'symbol': p['Symbol'],
@@ -34,10 +34,9 @@ with open(r'C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles\S&P500.jso
 
         }
         r = requests.get('https://www.alphavantage.co/query?', parameters)
-        #print(r.json())###
+        
         filename = p['Symbol'] + '.csv'
-        #with open(filename, "w", encoding="utf-8") as writeJSON: C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles
-            #json.dump(r.json(), writeJSON, ensure_ascii=False)
+        
         path = r'C:\Users\coste\PycharmProjects\Stock_Clustering\dataFiles'
 
         with open(os.path.join(path,filename), 'w',newline="\n" ) as csvfile:
