@@ -1,1 +1,3 @@
 # Stock_Clustering
+
+The main object of this project is the application of unsupervised machine learning clustering algorithms on financial data. This project makes use of algorithms on time series data clustering, and more specifically, on stock time series data. The time series clustering became very popular over the past few years, because it is useful for pattern creation and information mining from highly complex and oversized data, as stock data. In this repo, two important algorithms are executed, the K-means algorithm and the hierrarchical cluster analysis algorithm, being given as input stock data from companies which are listed in S&P 500 stock market. 
